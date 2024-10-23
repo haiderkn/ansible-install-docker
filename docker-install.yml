@@ -1,0 +1,49 @@
+---
+- hosts: ec2
+  become: yes
+  tasks:
+
+    # Ensure the required packages are installed
+    - name: Install required system packages
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg-agent
+          - software-properties-common
+        state: present
+        update_cache: yes
+
+    # Add Docker’s official GPG key
+    - name: Add Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    # Set up the Docker stable repository
+    - name: Add Docker APT repository
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable
+        state: present
+
+    # Install Docker
+    - name: Install Docker
+      apt:
+        name: docker-ce
+        state: present
+        update_cache: yes
+
+    # Ensure Docker service is started and enabled
+    - name: Start and enable Docker service
+      systemd:
+        name: docker
+        enabled: yes
+        state: started
+
+    # Add the EC2 user to the docker group (optional)
+    - name: Add user to the docker group
+      user:
+        name: ubuntu
+        groups: docker
+        append: yes
